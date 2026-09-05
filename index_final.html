@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Karun Singampalli · Data Scientist & ML Engineer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#0f2044;--navy2:#1a3260;--blue:#1d4ed8;--blue-mid:#2563eb;
+  --blue-light:#eff6ff;--blue-pale:#f8faff;--text:#111827;--text2:#374151;
+  --muted:#6b7280;--muted2:#9ca3af;--border:#e5e7eb;--border2:#f3f4f6;
+  --surface:#f9fafb;--white:#ffffff;--green:#059669;--gold:#b45309;
+}
+html{scroll-behavior:smooth}
+body{background:var(--white);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* ═══════════════════════════════════════
+   CHATBOT LANDING
+═══════════════════════════════════════ */
+#chatbot-screen{
+  position:fixed;inset:0;z-index:1000;
+  background:linear-gradient(160deg,#f0f6ff 0%,#eaf0ff 60%,#f5f0ff 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;
+  transition:opacity 0.5s ease,transform 0.5s ease;
+}
+#chatbot-screen.hidden{opacity:0;transform:translateY(-16px);pointer-events:none}
+
+.chat-brand{
+  display:flex;align-items:center;gap:10px;margin-bottom:36px;
+}
+.chat-brand-avatar{
+  width:44px;height:44px;border-radius:12px;
+  background:var(--navy);color:var(--white);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Serif Display',serif;font-size:18px;letter-spacing:-0.5px;
+}
+.chat-brand-name{font-family:'DM Serif Display',serif;font-size:20px;color:var(--navy)}
+.chat-brand-name span{color:var(--blue-mid)}
+
+.chat-greeting{
+  font-family:'DM Serif Display',serif;
+  font-size:32px;color:var(--navy);letter-spacing:-0.5px;
+  text-align:center;margin-bottom:10px;line-height:1.2;
+}
+.chat-sub{font-size:14px;color:var(--muted);text-align:center;margin-bottom:32px}
+
+/* Messages */
+.chat-messages{
+  width:100%;max-width:640px;max-height:260px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:10px;margin-bottom:16px;padding:0 2px;
+}
+.chat-messages:empty{display:none}
+.msg{max-width:82%;padding:12px 16px;border-radius:14px;font-size:13px;line-height:1.65;animation:msgIn 0.2s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.msg-bot{background:var(--white);border:1px solid var(--border);color:var(--text2);align-self:flex-start;border-bottom-left-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.msg-user{background:var(--navy);color:var(--white);align-self:flex-end;border-bottom-right-radius:4px}
+.msg-typing{background:var(--white);border:1px solid var(--border);align-self:flex-start;padding:14px 18px;border-bottom-left-radius:4px}
+.typing-dots{display:flex;gap:4px;align-items:center}
+.typing-dots span{width:6px;height:6px;border-radius:50%;background:var(--muted2);animation:dot 1.2s infinite}
+.typing-dots span:nth-child(2){animation-delay:0.2s}
+.typing-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes dot{0%,80%,100%{transform:scale(0.7);opacity:0.4}40%{transform:scale(1);opacity:1}}
+
+/* Search bar */
+.chat-input-wrap{
+  width:100%;max-width:640px;position:relative;
+}
+.chat-bar{
+  width:100%;display:flex;align-items:center;gap:0;
+  background:var(--white);border:1.5px solid var(--border);border-radius:14px;
+  box-shadow:0 4px 20px rgba(37,99,235,0.08);
+  overflow:hidden;transition:border-color 0.2s,box-shadow 0.2s;
+}
+.chat-bar:focus-within{border-color:var(--blue-mid);box-shadow:0 4px 28px rgba(37,99,235,0.14)}
+.chat-bar input{
+  flex:1;border:none;outline:none;padding:16px 20px;
+  font-size:14px;font-family:'Inter',sans-serif;color:var(--text);background:transparent;
+}
+.chat-bar input::placeholder{color:var(--muted2)}
+.chat-cursor{
+  display:inline-block;width:2px;height:18px;background:var(--blue-mid);
+  border-radius:1px;animation:blink 1s infinite;margin-left:1px;vertical-align:middle;
+  position:absolute;pointer-events:none;opacity:0;
+}
+.chat-bar:focus-within .chat-cursor{opacity:0}
+.chat-send{
+  background:var(--navy);color:var(--white);border:none;
+  padding:14px 24px;font-size:13px;font-weight:600;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:background 0.15s;white-space:nowrap;
+}
+.chat-send:hover{background:var(--navy2)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* Chips */
+.chat-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px;max-width:640px}
+.chip{
+  background:var(--white);border:1.5px solid var(--border);color:var(--text2);
+  font-size:12px;font-weight:500;padding:7px 15px;border-radius:20px;cursor:pointer;
+  transition:all 0.15s;font-family:'Inter',sans-serif;
+}
+.chip:hover{border-color:var(--blue-mid);color:var(--blue-mid);background:var(--blue-light)}
+
+/* Skip */
+.skip-btn{
+  position:absolute;top:20px;right:24px;
+  background:transparent;border:1px solid var(--border);color:var(--muted);
+  font-size:12px;padding:6px 16px;border-radius:20px;cursor:pointer;
+  transition:all 0.15s;font-family:'Inter',sans-serif;
+}
+.skip-btn:hover{border-color:var(--navy);color:var(--navy)}
+
+/* Animated placeholder cycling */
+#chat-input-field{caret-color:var(--blue-mid)}
+
+/* ═══════════════════════════════════════
+   PORTFOLIO
+═══════════════════════════════════════ */
+#portfolio{opacity:0;transition:opacity 0.5s ease;pointer-events:none}
+#portfolio.visible{opacity:1;pointer-events:all}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(255,255,255,0.97);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0 48px;height:60px;
+}
+.nav-logo{font-family:'DM Serif Display',serif;font-size:18px;color:var(--navy);text-decoration:none}
+.nav-logo span{color:var(--blue-mid)}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:color 0.15s}
+.nav-links a:hover,.nav-links a.active{color:var(--navy)}
+.nav-cta{background:var(--navy)!important;color:var(--white)!important;padding:8px 18px;border-radius:5px;font-size:12px!important;font-weight:600!important;letter-spacing:0.03em}
+.nav-cta:hover{background:var(--navy2)!important}
+
+/* HERO */
+.hero{display:grid;grid-template-columns:1fr 320px;gap:48px;padding:64px 48px;max-width:1200px;margin:0 auto}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:16px}
+.hero-eyebrow::before{content:'';display:inline-block;width:20px;height:2px;background:var(--blue-mid);border-radius:2px}
+.hero-name{font-family:'DM Serif Display',serif;font-size:46px;color:var(--navy);letter-spacing:-1.5px;line-height:1.1;margin-bottom:12px}
+.hero-name em{font-style:normal;color:var(--blue-mid)}
+.hero-title{font-size:13px;color:var(--muted);margin-bottom:20px;letter-spacing:0.01em}
+.hero-divider{width:36px;height:3px;background:var(--blue-mid);border-radius:2px;margin-bottom:20px}
+.hero-desc{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:28px;max-width:480px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn-primary{background:var(--navy);color:var(--white);padding:11px 26px;border-radius:5px;font-weight:600;font-size:13px;text-decoration:none;transition:background 0.15s}
+.btn-primary:hover{background:var(--navy2)}
+.btn-secondary{background:var(--white);border:1.5px solid var(--navy);color:var(--navy);padding:11px 26px;border-radius:5px;font-size:13px;font-weight:600;text-decoration:none;transition:background 0.15s}
+.btn-secondary:hover{background:var(--blue-light)}
+.hero-card{background:var(--navy);border-radius:10px;padding:28px;align-self:start}
+.hero-card-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:rgba(255,255,255,0.4);margin-bottom:20px}
+.metric{padding-bottom:18px;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.metric:last-child{padding-bottom:0;margin-bottom:0;border-bottom:none}
+.metric-val{font-family:'DM Serif Display',serif;font-size:28px;color:var(--white);letter-spacing:-0.5px}
+.metric-desc{font-size:12px;color:rgba(255,255,255,0.5);margin-top:3px;line-height:1.5}
+.metric-tag{display:inline-block;margin-top:5px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);font-size:10px;padding:2px 8px;border-radius:3px}
+
+/* SECTIONS */
+.section{padding:60px 48px;border-bottom:1px solid var(--border);max-width:1200px;margin:0 auto}
+.section-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:8px}
+.section-eyebrow::before{content:'';display:inline-block;width:16px;height:2px;background:var(--blue-mid);border-radius:2px}
+.section-title{font-family:'DM Serif Display',serif;font-size:26px;color:var(--navy);letter-spacing:-0.3px;margin-bottom:4px}
+.section-sub{font-size:13px;color:var(--muted);margin-bottom:36px}
+
+/* EXPERTISE */
+.expertise-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.exp-card{background:var(--white);padding:24px 20px;transition:background 0.15s}
+.exp-card:hover{background:var(--blue-pale)}
+.exp-num{font-family:'DM Serif Display',serif;font-size:13px;color:#d1d5db;margin-bottom:10px}
+.exp-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.exp-body{font-size:12px;color:var(--muted);line-height:1.65;margin-bottom:12px}
+.exp-tags{display:flex;flex-wrap:wrap;gap:4px}
+.exp-tag{background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:10px;font-weight:500;padding:2px 8px;border-radius:3px}
+
+/* ═══════════════════════════════════════
+   PROJECT SLIDE CARDS — clean arrows
+═══════════════════════════════════════ */
+.project-block{margin-bottom:44px}
+.project-block:last-child{margin-bottom:0}
+
+.proj-meta{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:16px}
+.proj-meta-left{}
+.proj-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:3px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.badge-a{background:#ede9fe;color:#5b21b6}
+.badge-r{background:#dbeafe;color:#1e40af}
+.badge-rt{background:#d1fae5;color:#065f46}
+.badge-ml{background:#fef3c7;color:#92400e}
+.proj-name{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.proj-desc{font-size:13px;color:var(--muted);max-width:520px;line-height:1.6}
+.proj-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.action-btn{font-size:11px;font-weight:600;padding:7px 14px;border-radius:4px;text-decoration:none;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all 0.15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-gh{background:var(--navy);color:var(--white)}
+.btn-gh:hover{background:var(--navy2)}
+.btn-ai{background:var(--blue-mid);color:var(--white)}
+.btn-ai:hover{background:var(--blue)}
+.btn-pdf{background:var(--white);border:1px solid var(--border);color:var(--text2)}
+.btn-pdf:hover{border-color:var(--navy);color:var(--navy)}
+
+/* Slide viewer */
+.slide-viewer{
+  border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  background:var(--surface);position:relative;
+}
+.slide-track{
+  display:flex;transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.slide-page{
+  min-width:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:32px;min-height:200px;background:var(--white);
+}
+.slide-placeholder{
+  width:100%;max-width:520px;aspect-ratio:16/9;
+  background:var(--blue-pale);border:1.5px dashed var(--border);
+  border-radius:8px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;
+}
+.slide-placeholder-icon{font-size:32px;opacity:0.4}
+.slide-placeholder-text{font-size:13px;color:var(--muted2);font-weight:500}
+.slide-placeholder-hint{font-size:11px;color:var(--muted2)}
+
+/* Arrow controls */
+.slide-controls{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-top:1px solid var(--border);background:var(--white);
+}
+.slide-arrow{
+  width:32px;height:32px;border-radius:6px;border:1px solid var(--border);
+  background:var(--white);color:var(--text2);font-size:14px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:all 0.15s;font-family:'Inter',sans-serif;
+}
+.slide-arrow:hover{border-color:var(--navy);color:var(--navy);background:var(--blue-light)}
+.slide-arrow:disabled{opacity:0.3;cursor:default;pointer-events:none}
+.slide-counter{font-size:12px;color:var(--muted);font-weight:500}
+.slide-dots-row{display:flex;gap:6px;align-items:center}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--border);cursor:pointer;transition:background 0.2s}
+.sdot.active{background:var(--blue-mid);width:18px;border-radius:3px}
+
+/* CONSTRUCTION */
+.construction-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.construction-card{
+  border:2px dashed #d1d5db;border-radius:10px;
+  background:var(--surface);padding:24px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.constr-top{display:flex;align-items:center;gap:12px}
+.constr-icon{width:40px;height:40px;border-radius:8px;background:#fef3c7;border:1px solid #fde68a;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.constr-title{font-size:14px;font-weight:700;color:var(--navy)}
+.constr-status{font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.08em;margin-top:2px}
+.constr-desc{font-size:13px;color:var(--muted);line-height:1.65}
+.constr-progress{background:var(--border2);border-radius:4px;height:4px;overflow:hidden}
+.constr-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue-mid),#7c3aed);animation:shimmer 2s infinite}
+@keyframes shimmer{0%{opacity:0.7}50%{opacity:1}100%{opacity:0.7}}
+.constr-tags{display:flex;flex-wrap:wrap;gap:4px}
+.constr-tag{background:var(--white);border:1px solid var(--border);color:var(--text2);font-size:10px;font-weight:500;padding:2px 8px;border-radius:3px}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column}
+.tl-item{display:grid;grid-template-columns:148px 1px 1fr;gap:0 24px}
+.tl-date{text-align:right;padding-top:2px;padding-bottom:28px}
+.tl-date-main{font-size:12px;font-weight:700;color:var(--navy)}
+.tl-date-range{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4}
+.tl-track{display:flex;flex-direction:column;align-items:center}
+.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--blue-mid);border:2px solid var(--white);box-shadow:0 0 0 2px var(--blue-mid);flex-shrink:0;margin-top:4px;z-index:1}
+.tl-line{flex:1;width:1px;background:var(--border);margin-top:4px}
+.tl-item:last-child .tl-line{display:none}
+.tl-content{padding:0 0 28px}
+.tl-role{font-size:13px;font-weight:700;color:var(--navy)}
+.tl-company{font-size:12px;color:var(--blue-mid);font-weight:600;margin:3px 0 8px}
+.tl-bullets{list-style:none}
+.tl-bullets li{font-size:12px;color:var(--muted);padding-left:14px;position:relative;margin-bottom:4px;line-height:1.6}
+.tl-bullets li::before{content:'—';position:absolute;left:0;color:var(--border);font-size:10px;top:3px}
+.edu-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:36px;padding-top:36px;border-top:1px solid var(--border)}
+.edu-card{border:1px solid var(--border);border-radius:6px;padding:20px}
+.edu-degree{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.edu-school{font-size:12px;color:var(--blue-mid);font-weight:600;margin-bottom:3px}
+.edu-detail{font-size:11px;color:var(--muted)}
+
+/* CONTACT */
+.contact-wrap{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+.contact-intro{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:24px}
+.avail-pill{display:inline-flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #bbf7d0;color:var(--green);font-size:12px;font-weight:600;padding:8px 16px;border-radius:5px}
+.avail-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.contact-items{display:flex;flex-direction:column;gap:10px}
+.contact-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--border);border-radius:6px;text-decoration:none;transition:all 0.15s}
+.contact-item:hover{border-color:var(--blue-mid);background:var(--blue-light)}
+.contact-icon{width:34px;height:34px;border-radius:6px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.contact-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px}
+.contact-val{font-size:12px;font-weight:600;color:var(--navy)}
+
+/* FOOTER */
+footer{background:var(--navy);padding:22px 48px;display:flex;justify-content:space-between;align-items:center}
+.footer-name{font-family:'DM Serif Display',serif;font-size:15px;color:rgba(255,255,255,0.6)}
+.footer-links{display:flex;gap:20px}
+.footer-links a{font-size:12px;color:rgba(255,255,255,0.4);text-decoration:none;transition:color 0.15s}
+.footer-links a:hover{color:rgba(255,255,255,0.8)}
+.footer-copy{font-size:12px;color:rgba(255,255,255,0.3)}
+
+/* AI INSIGHTS MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--white);border-radius:12px;width:580px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;transform:translateY(16px);transition:transform 0.2s;box-shadow:0 20px 60px rgba(0,0,0,0.15)}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-header h3{font-size:14px;font-weight:700;color:var(--navy)}
+.modal-close{background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;padding:2px 6px;line-height:1}
+.modal-body{padding:22px;overflow-y:auto;flex:1;font-size:13px;color:var(--text2);line-height:1.8}
+.modal-loading{display:flex;align-items:center;gap:10px;color:var(--muted)}
+
+@media(max-width:900px){
+  nav{padding:0 20px}.nav-links{display:none}
+  .hero{grid-template-columns:1fr;padding:36px 20px}
+  .section{padding:40px 20px}
+  .expertise-grid{grid-template-columns:1fr 1fr}
+  .proj-meta{flex-direction:column}
+  .proj-actions{flex-wrap:wrap}
+  .contact-wrap,.edu-grid{grid-template-columns:1fr}
+  footer{padding:20px;flex-direction:column;gap:10px;text-align:center}
+}
+@media(max-width:600px){.expertise-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     CHATBOT LANDING
+═══════════════════════════════════════ -->
+<div id="chatbot-screen">
+  <button class="skip-btn" onclick="skipToPortfolio()">Skip to portfolio →</button>
+
+  <div class="chat-brand">
+    <div class="chat-brand-avatar">KS</div>
+    <div class="chat-brand-name">Karun <span>Singampalli</span></div>
+  </div>
+
+  <h1 class="chat-greeting">Ask me anything.</h1>
+  <p class="chat-sub">I'm Karun's AI — I know his work, stack, and projects inside out.</p>
+
+  <div class="chat-messages" id="chat-messages"></div>
+
+  <div class="chat-chips" id="chat-chips">
+    <button class="chip" onclick="sendChip(this)">Tell me about Karun</button>
+    <button class="chip" onclick="sendChip(this)">What projects has he built?</button>
+    <button class="chip" onclick="sendChip(this)">What's his ML stack?</button>
+    <button class="chip" onclick="sendChip(this)">Is he open to work?</button>
+    <button class="chip" onclick="sendChip(this)">What makes him stand out?</button>
+  </div>
+
+  <div class="chat-input-wrap">
+    <div class="chat-bar">
+      <input type="text" id="chat-input-field" placeholder="Ask about projects, skills, experience..." onkeydown="if(event.key==='Enter')sendMessage()"/>
+      <button class="chat-send" onclick="sendMessage()">Send →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PORTFOLIO
+═══════════════════════════════════════ -->
+<div id="portfolio">
+
+<nav>
+  <a href="#" class="nav-logo">Karun <span>Singampalli</span></a>
+  <ul class="nav-links">
+    <li><a href="#expertise">Expertise</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#contact" class="nav-cta">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div style="border-bottom:1px solid var(--border)">
+<section class="hero">
+  <div>
+    <div class="hero-eyebrow">Data Scientist & ML Engineer</div>
+    <h1 class="hero-name">Venkatakarun<br><em>Singampalli</em></h1>
+
+    <p class="hero-title">Senior Data Scientist &nbsp;·&nbsp; Production ML &nbsp;·&nbsp; Agentic AI &nbsp;·&nbsp; LLM Systems &nbsp;·&nbsp; MLOps</p>
+    <div class="hero-divider"></div>
+    <p class="hero-desc">Senior Data Scientist and ML Engineer with 4+ years of experience designing and shipping production ML systems — from hybrid recommendation engines and LLM-powered analytics pipelines to real-time fraud detection with automated drift monitoring. Based in Dallas, Texas.</p>
+    <div class="hero-btns">
+      <a href="#projects" class="btn-primary">View Projects</a>
+      <a href="#contact" class="btn-secondary">Get in Touch</a>
+    </div>
+  </div>
+  <div class="hero-card">
+    <div class="hero-card-label">Impact at a Glance</div>
+    <div class="metric"><div class="metric-val">60 hrs</div><div class="metric-desc">Weekly analyst hours eliminated via LLM pipeline</div><div class="metric-tag">Banking · Symplore</div></div>
+    <div class="metric"><div class="metric-val">26</div><div class="metric-desc">RAG analytical workflows automated</div><div class="metric-tag">GPT-4 · LangChain</div></div>
+    <div class="metric"><div class="metric-val">20%</div><div class="metric-desc">Accuracy gain over predecessor models</div><div class="metric-tag">Fraud Detection</div></div>
+    <div class="metric"><div class="metric-val">250+</div><div class="metric-desc">Daily dashboard views</div><div class="metric-tag">Power BI · Tableau</div></div>
+  </div>
+</section>
+</div>
+
+<!-- EXPERTISE -->
+<div style="border-bottom:1px solid var(--border)">
+<section class="section" id="expertise">
+  <div class="section-eyebrow">Core Expertise</div>
+  <h2 class="section-title">What I Build</h2>
+  <p class="section-sub">Six capability areas — each backed by production deployments</p>
+  <div class="expertise-grid">
+    <div class="exp-card"><div class="exp-num">01</div><div class="exp-title">Agentic AI Systems</div><p class="exp-body">Multi-agent orchestration using LangGraph StateGraph — routing, retrieval, reasoning, and explainability agents in coordinated sequence.</p><div class="exp-tags"><span class="exp-tag">LangGraph</span><span class="exp-tag">LangChain</span><span class="exp-tag">ChromaDB</span></div></div>
+    <div class="exp-card"><div class="exp-num">02</div><div class="exp-title">LLM & RAG Pipelines</div><p class="exp-body">Production RAG with hybrid retrieval, RAGAS hallucination evaluation, and prompt engineering for banking-scale accuracy.</p><div class="exp-tags"><span class="exp-tag">GPT-4</span><span class="exp-tag">RAG</span><span class="exp-tag">RAGAS</span></div></div>
+    <div class="exp-card"><div class="exp-num">03</div><div class="exp-title">Recommender Systems</div><p class="exp-body">Hybrid engines combining collaborative filtering (ALS, SVD, LightFM) with BERT content-based models and business rule layers.</p><div class="exp-tags"><span class="exp-tag">ALS</span><span class="exp-tag">LightFM</span><span class="exp-tag">BERT</span></div></div>
+    <div class="exp-card"><div class="exp-num">04</div><div class="exp-title">Real-Time ML Pipelines</div><p class="exp-body">Streaming inference with Kafka ingestion, sub-second scoring, and Prometheus/Grafana drift monitoring before accuracy degrades.</p><div class="exp-tags"><span class="exp-tag">Kafka</span><span class="exp-tag">XGBoost</span><span class="exp-tag">Prometheus</span></div></div>
+    <div class="exp-card"><div class="exp-num">05</div><div class="exp-title">MLOps & Deployment</div><p class="exp-body">Airflow DAGs, Docker containerization, REST API serving, MLflow versioning, and automated retraining at drift thresholds.</p><div class="exp-tags"><span class="exp-tag">Airflow</span><span class="exp-tag">Docker</span><span class="exp-tag">MLflow</span></div></div>
+    <div class="exp-card"><div class="exp-num">06</div><div class="exp-title">NLP & Text Analytics</div><p class="exp-body">Classification at 89% accuracy — TF-IDF, LSTM, BERT — deployed on 200K+ records with k-fold validation and SHAP explainability.</p><div class="exp-tags"><span class="exp-tag">LSTM</span><span class="exp-tag">SHAP</span><span class="exp-tag">LIME</span></div></div>
+  </div>
+</section>
+</div>
+
+<!-- COMPLETED PROJECTS -->
+<div style="border-bottom:1px solid var(--border)">
+<section class="section" id="projects">
+  <div class="section-eyebrow">Completed Projects</div>
+  <h2 class="section-title">Featured Work</h2>
+  <p class="section-sub">Use the arrows to flip through project slides — GitHub, AI insights, and PDF for each</p>
+
+  <!-- PROJECT 1 -->
+  <div class="project-block">
+    <div class="proj-meta">
+      <div class="proj-meta-left">
+        <div class="proj-badge badge-a">Agentic AI</div>
+        <div class="proj-name">Agentic Patron Intelligence System</div>
+        <p class="proj-desc">Multi-agent LangGraph system — Retrieval, Analytics, Recommendation, and Explainer agents over ChromaDB.</p>
+      </div>
+      <div class="proj-actions">
+        <a href="https://github.com/singamkarunn/agentic-patron-intelligence" target="_blank" class="action-btn btn-gh">⌥ GitHub</a>
+        <button class="action-btn btn-ai" onclick="openInsights('Agentic Patron Intelligence System','Multi-agent LangGraph system combining ChromaDB retrieval, patron analytics, hybrid ML recommendations (ALS + BERT + rules), and SHAP explainability agents. Built with LangGraph StateGraph, FastAPI, Docker, and Streamlit. Deployed on Hugging Face Spaces.')">✦ AI Insights</button>
+        <button class="action-btn btn-pdf" onclick="downloadPDF('agentic-patron-intelligence')">↓ PDF</button>
+      </div>
+    </div>
+    <div class="slide-viewer">
+      <div class="slide-track" id="track-p1">
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🤖</div><div class="slide-placeholder-text">Slide 1 — Project Overview</div><div class="slide-placeholder-hint">Replace with your PPT screenshot</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🏗️</div><div class="slide-placeholder-text">Slide 2 — Architecture</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🔍</div><div class="slide-placeholder-text">Slide 3 — Retrieval Agent</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📊</div><div class="slide-placeholder-text">Slide 4 — Analytics Agent</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🎯</div><div class="slide-placeholder-text">Slide 5 — Recommendation Engine</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">💡</div><div class="slide-placeholder-text">Slide 6 — SHAP Explainability</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🐳</div><div class="slide-placeholder-text">Slide 7 — Docker Deployment</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📈</div><div class="slide-placeholder-text">Slide 8 — Results & Metrics</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🧪</div><div class="slide-placeholder-text">Slide 9 — Evaluation</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🚀</div><div class="slide-placeholder-text">Slide 10 — Live Demo</div></div></div>
+      </div>
+      <div class="slide-controls">
+        <button class="slide-arrow" id="prev-p1" onclick="prevSlide('p1')" disabled>←</button>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <span class="slide-counter" id="counter-p1">1 / 10</span>
+          <div class="slide-dots-row" id="dots-p1"></div>
+        </div>
+        <button class="slide-arrow" id="next-p1" onclick="nextSlide('p1')">→</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECT 2 -->
+  <div class="project-block">
+    <div class="proj-meta">
+      <div class="proj-meta-left">
+        <div class="proj-badge badge-r">RAG + Evaluation</div>
+        <div class="proj-name">Production RAG System</div>
+        <p class="proj-desc">Hybrid retrieval (ChromaDB + BM25), RAGAS evaluation framework, hallucination rate monitoring across a 50-query test set.</p>
+      </div>
+      <div class="proj-actions">
+        <a href="https://github.com/singamkarunn/production-rag-system" target="_blank" class="action-btn btn-gh">⌥ GitHub</a>
+        <button class="action-btn btn-ai" onclick="openInsights('Production RAG System','RAG pipeline with hybrid retrieval combining ChromaDB dense search and BM25 keyword reranking. RAGAS evaluation framework measures faithfulness, hallucination rate, and context recall across a 50-question synthetic test set. Deployed via FastAPI and Docker on Render.')">✦ AI Insights</button>
+        <button class="action-btn btn-pdf" onclick="downloadPDF('production-rag-system')">↓ PDF</button>
+      </div>
+    </div>
+    <div class="slide-viewer">
+      <div class="slide-track" id="track-p2">
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🔍</div><div class="slide-placeholder-text">Slide 1 — RAG Overview</div><div class="slide-placeholder-hint">Replace with your PPT screenshot</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📄</div><div class="slide-placeholder-text">Slide 2 — Chunking Strategy</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🧮</div><div class="slide-placeholder-text">Slide 3 — Embeddings</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🗄️</div><div class="slide-placeholder-text">Slide 4 — ChromaDB Store</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">⚖️</div><div class="slide-placeholder-text">Slide 5 — Hybrid Retrieval</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🤖</div><div class="slide-placeholder-text">Slide 6 — Generation</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📏</div><div class="slide-placeholder-text">Slide 7 — RAGAS Evaluation</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📊</div><div class="slide-placeholder-text">Slide 8 — Results</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🐳</div><div class="slide-placeholder-text">Slide 9 — Deployment</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🚀</div><div class="slide-placeholder-text">Slide 10 — Live Demo</div></div></div>
+      </div>
+      <div class="slide-controls">
+        <button class="slide-arrow" id="prev-p2" onclick="prevSlide('p2')" disabled>←</button>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <span class="slide-counter" id="counter-p2">1 / 10</span>
+          <div class="slide-dots-row" id="dots-p2"></div>
+        </div>
+        <button class="slide-arrow" id="next-p2" onclick="nextSlide('p2')">→</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECT 3 -->
+  <div class="project-block">
+    <div class="proj-meta">
+      <div class="proj-meta-left">
+        <div class="proj-badge badge-rt">Real-Time ML</div>
+        <div class="proj-name">Real-Time Fraud Detection Pipeline</div>
+        <p class="proj-desc">Kafka ingestion, XGBoost + Isolation Forest ensemble scoring, Prometheus drift monitoring. One-command Docker Compose startup.</p>
+      </div>
+      <div class="proj-actions">
+        <a href="https://github.com/singamkarunn/realtime-fraud-detection" target="_blank" class="action-btn btn-gh">⌥ GitHub</a>
+        <button class="action-btn btn-ai" onclick="openInsights('Real-Time Fraud Detection Pipeline','Streaming ML pipeline with Kafka ingestion, XGBoost and Isolation Forest ensemble scoring, Prometheus PSI drift monitoring, Grafana dashboards, PostgreSQL storage, and one-command Docker Compose deployment.')">✦ AI Insights</button>
+        <button class="action-btn btn-pdf" onclick="downloadPDF('realtime-fraud-detection')">↓ PDF</button>
+      </div>
+    </div>
+    <div class="slide-viewer">
+      <div class="slide-track" id="track-p3">
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">⚡</div><div class="slide-placeholder-text">Slide 1 — Pipeline Overview</div><div class="slide-placeholder-hint">Replace with your PPT screenshot</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📡</div><div class="slide-placeholder-text">Slide 2 — Kafka Architecture</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🧬</div><div class="slide-placeholder-text">Slide 3 — Feature Engineering</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🌲</div><div class="slide-placeholder-text">Slide 4 — XGBoost Model</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🔭</div><div class="slide-placeholder-text">Slide 5 — Isolation Forest</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🤝</div><div class="slide-placeholder-text">Slide 6 — Ensemble Fusion</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📉</div><div class="slide-placeholder-text">Slide 7 — Drift Monitoring</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📊</div><div class="slide-placeholder-text">Slide 8 — Grafana Dashboards</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📈</div><div class="slide-placeholder-text">Slide 9 — Model Performance</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🚀</div><div class="slide-placeholder-text">Slide 10 — Deployment</div></div></div>
+      </div>
+      <div class="slide-controls">
+        <button class="slide-arrow" id="prev-p3" onclick="prevSlide('p3')" disabled>←</button>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <span class="slide-counter" id="counter-p3">1 / 10</span>
+          <div class="slide-dots-row" id="dots-p3"></div>
+        </div>
+        <button class="slide-arrow" id="next-p3" onclick="nextSlide('p3')">→</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECT 4 -->
+  <div class="project-block">
+    <div class="proj-meta">
+      <div class="proj-meta-left">
+        <div class="proj-badge badge-ml">ML Platform</div>
+        <div class="proj-name">Smart Library ML Platform</div>
+        <p class="proj-desc">Full ML lifecycle — Airflow ETL, Kafka ingestion, hybrid recommender (ALS + BERT + rules), FastAPI deployment, Prometheus monitoring.</p>
+      </div>
+      <div class="proj-actions">
+        <a href="https://github.com/singamkarunn/smart-library-ml-platform" target="_blank" class="action-btn btn-gh">⌥ GitHub</a>
+        <button class="action-btn btn-ai" onclick="openInsights('Smart Library ML Platform','Full ML lifecycle platform built at Symplore. Hybrid recommender combining ALS, SVD, LightFM collaborative filtering with TF-IDF and BERT content-based models. Airflow DAGs for ETL, Kafka real-time ingestion, Docker deployment, Prometheus/Grafana monitoring with automated retraining at 5-6 week drift threshold.')">✦ AI Insights</button>
+        <button class="action-btn btn-pdf" onclick="downloadPDF('smart-library-ml-platform')">↓ PDF</button>
+      </div>
+    </div>
+    <div class="slide-viewer">
+      <div class="slide-track" id="track-p4">
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📚</div><div class="slide-placeholder-text">Slide 1 — Platform Overview</div><div class="slide-placeholder-hint">Replace with your PPT screenshot</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📥</div><div class="slide-placeholder-text">Slide 2 — Data Ingestion</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">⚙️</div><div class="slide-placeholder-text">Slide 3 — Airflow ETL</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🧬</div><div class="slide-placeholder-text">Slide 4 — Feature Engineering</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🤝</div><div class="slide-placeholder-text">Slide 5 — Collaborative Filtering</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📝</div><div class="slide-placeholder-text">Slide 6 — Content-Based NLP</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">⚡</div><div class="slide-placeholder-text">Slide 7 — Hybrid Engine</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📉</div><div class="slide-placeholder-text">Slide 8 — Drift Monitoring</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📊</div><div class="slide-placeholder-text">Slide 9 — Dashboard</div></div></div>
+        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🚀</div><div class="slide-placeholder-text">Slide 10 — Live Demo · github.com/singamkarunn</div></div></div>
+      </div>
+      <div class="slide-controls">
+        <button class="slide-arrow" id="prev-p4" onclick="prevSlide('p4')" disabled>←</button>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <span class="slide-counter" id="counter-p4">1 / 10</span>
+          <div class="slide-dots-row" id="dots-p4"></div>
+        </div>
+        <button class="slide-arrow" id="next-p4" onclick="nextSlide('p4')">→</button>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- IN PROGRESS -->
+<div style="border-bottom:1px solid var(--border)">
+<section class="section">
+  <div class="section-eyebrow">In Progress</div>
+  <h2 class="section-title">Under Construction</h2>
+  <p class="section-sub">Ideas currently being built — check back soon</p>
+  <div class="construction-grid">
+    <div class="construction-card">
+      <div class="constr-top">
+        <div class="constr-icon">🔬</div>
+        <div><div class="constr-title">LLM Fine-Tuning Lab</div><div class="constr-status">⚡ Building now</div></div>
+      </div>
+      <p class="constr-desc">Fine-tuning Mistral-7B with LoRA adapters on domain-specific data. Comparing base vs fine-tuned performance on retrieval and generation tasks with automated evaluation.</p>
+      <div class="constr-progress"><div class="constr-bar" style="width:35%"></div></div>
+      <div class="constr-tags"><span class="constr-tag">Mistral-7B</span><span class="constr-tag">LoRA</span><span class="constr-tag">PEFT</span><span class="constr-tag">HuggingFace</span></div>
+    </div>
+    <div class="construction-card">
+      <div class="constr-top">
+        <div class="constr-icon">🧪</div>
+        <div><div class="constr-title">A/B Testing Framework</div><div class="constr-status">⚡ Building now</div></div>
+      </div>
+      <p class="constr-desc">Statistical A/B testing infrastructure comparing collaborative vs hybrid recommender models — measuring lift in Precision@10, Recall@10, and NDCG with significance testing.</p>
+      <div class="constr-progress"><div class="constr-bar" style="width:20%"></div></div>
+      <div class="constr-tags"><span class="constr-tag">SciPy</span><span class="constr-tag">Statsmodels</span><span class="constr-tag">Streamlit</span><span class="constr-tag">PostgreSQL</span></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- EXPERIENCE -->
+<div style="border-bottom:1px solid var(--border)">
+<section class="section" id="experience">
+  <div class="section-eyebrow">Career History</div>
+  <h2 class="section-title">Professional Experience</h2>
+  <p class="section-sub">4+ years across ML engineering, data science, and product development — India & USA</p>
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-date"><div class="tl-date-main">Symplore Inc.</div><div class="tl-date-range">Jul 2025 – Present<br>Novi, MI · Remote</div></div><div class="tl-track"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-role">Senior Data Scientist — ML Engineering</div><div class="tl-company">Symplore Inc.</div><ul class="tl-bullets"><li>Engineered end-to-end ML and data engineering across 2 production platforms — Smart Library Analytics and TRIPGO — processing 8M+ records across 7+ data domains with 30% data-quality improvement</li><li>Built hybrid recommendation platform (ALS, SVD, BERT, rules) improving Precision@10 by 15% over baseline across 250K+ catalog items; inference at &lt;300ms P95 latency supporting 1K+ requests/hour</li><li>Developed 12+ Airflow ETL workflows at 99%+ reliability; automated ML lifecycle with 10+ DAGs reducing manual operations by 50%; Prometheus/Grafana monitoring across 10+ pipelines</li></ul></div></div>
+    <div class="tl-item"><div class="tl-date"><div class="tl-date-main">Intelligenie LLC</div><div class="tl-date-range">Sep 2024 – May 2025<br>Dallas, TX · Remote</div></div><div class="tl-track"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-role">Data Scientist</div><div class="tl-company">Intelligenie LLC</div><ul class="tl-bullets"><li>NLP classification on 200K+ Reddit posts — 89% accuracy, 25% improvement over baseline using TF-IDF, n-grams, and LSTM</li><li>8 engineered features for stress detection; validated with k-fold cross-validation</li></ul></div></div>
+    <div class="tl-item"><div class="tl-date"><div class="tl-date-main">360DigiTMG</div><div class="tl-date-range">Jan 2022 – Jul 2022<br>India · Remote</div></div><div class="tl-track"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-role">Data Analyst Trainee</div><div class="tl-company">360DigiTMG</div><ul class="tl-bullets"><li>Analyzed 3M+ sales records in SQL; built 5 Power BI dashboards replacing weekly manual reports</li></ul></div></div>
+    <div class="tl-item"><div class="tl-date"><div class="tl-date-main">FAVO Robotics</div><div class="tl-date-range">Jan 2020 – Dec 2021<br>India · On-site</div></div><div class="tl-track"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-role">Product Development Analyst</div><div class="tl-company">FAVO Robotics</div><ul class="tl-bullets"><li>Analyzed 100K+ manufacturing and robotic data points using Python and SQL; built 15+ operational KPIs covering production output, cycle time, defect rates, and equipment utilization</li><li>Designed 5-axis robotic arm in SolidWorks with ANSYS FEA validation; engineered Python/ROS control workflows — improving motion accuracy by 55% and reducing manufacturing defects by 30%</li></ul></div></div>
+
+  </div>
+  <div class="edu-grid">
+    <div class="edu-card"><div class="edu-degree">M.S. Data Science</div><div class="edu-school">University of Texas at Arlington</div><div class="edu-detail">Arlington, TX · 2022 – 2024</div></div>
+    <div class="edu-card"><div class="edu-degree">B.Tech Mechanical Engineering</div><div class="edu-school">Mahindra University</div><div class="edu-detail">Hyderabad, India · 2016 – 2020</div></div>
+  </div>
+</section>
+</div>
+
+<!-- CONTACT -->
+<div style="border-bottom:1px solid var(--border)">
+<section class="section" id="contact">
+  <div class="section-eyebrow">Contact</div>
+  <h2 class="section-title">Let's Connect</h2>
+  <div class="contact-wrap">
+    <div>
+      <p class="contact-intro">Open to senior Data Scientist and ML Engineer roles at companies building serious ML infrastructure. Most effective on problems where production accuracy, pipeline reliability, and system design all matter equally.</p>
+      <div class="avail-pill"><div class="avail-dot"></div>Available for senior ML & Data Science roles · Dallas, Texas</div>
+    </div>
+    <div class="contact-items">
+      <a href="mailto:singampalli.karun@gmail.com" class="contact-item"><div class="contact-icon">✉</div><div><div class="contact-label">Email</div><div class="contact-val">singampalli.karun@gmail.com</div></div></a>
+      <a href="https://linkedin.com/in/venkata-karun-singampalli-4aa975161" target="_blank" class="contact-item"><div class="contact-icon">in</div><div><div class="contact-label">LinkedIn</div><div class="contact-val">venkata-karun-singampalli</div></div></a>
+      <a href="https://github.com/singamkarunn" target="_blank" class="contact-item"><div class="contact-icon">⌥</div><div><div class="contact-label">GitHub</div><div class="contact-val">github.com/singamkarunn</div></div></a>
+      <div class="contact-item"><div class="contact-icon">📍</div><div><div class="contact-label">Location</div><div class="contact-val">Dallas, Texas</div></div></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<footer>
+  <div class="footer-name">Karun Singampalli</div>
+  <div class="footer-copy">© 2026 · karun.grihzen.app</div>
+  <div class="footer-links"><a href="https://linkedin.com/in/venkata-karun-singampalli-4aa975161" target="_blank">LinkedIn</a><a href="https://github.com/singamkarunn" target="_blank">GitHub</a><a href="#">Resume</a></div>
+</footer>
+</div>
+
+<!-- INSIGHTS MODAL -->
+<div class="modal-overlay" id="insights-modal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modal-title">AI Insights</h3><button class="modal-close" onclick="closeInsights()">×</button></div>
+    <div class="modal-body" id="modal-body"><div class="modal-loading"><div class="typing-dots"><span></span><span></span><span></span></div>&nbsp;Generating insights...</div></div>
+  </div>
+</div>
+
+<script>
+// ── KARUN CONTEXT ──────────────────────────────────
+const KARUN_CONTEXT = `You are Karun Singampalli's personal AI assistant on his portfolio website. Speak in first person AS Karun — confident, sharp, technically precise like a senior ML engineer. Never say "Karun said" — say "I built" or "I designed". Keep answers to 2-4 sentences unless asked for more.
+
+ABOUT ME:
+- Senior Data Scientist & ML Engineer, 4+ years of industry experience, Dallas, Texas
+- MS Data Science, UT Arlington (2022-2024). B.Tech Mechanical Engineering, Mahindra University (2016-2020)
+- Currently at Symplore Inc. (Jul 2025-present), previously Intelligenie LLC, 360DigiTMG, FAVO Robotics
+- 4+ years of industry experience across data science, ML engineering, and product analytics
+- Open to senior ML roles. F1 STEM OPT. singampalli.karun@gmail.com
+
+MY WORK AT SYMPLORE:
+- Built hybrid recommendation system: collaborative filtering (ALS, SVD, LightFM) + content-based NLP (TF-IDF, BERT) + rules
+- Airflow DAGs for ETL, Kafka real-time ingestion, Docker deployment, Prometheus/Grafana drift monitoring
+- RAG chatbot across 26 workflows — eliminated 60 analyst-hours/week in banking
+- 10+ production models, 20% accuracy gain, 250+ daily dashboard views
+- TRIPGO travel data engineering (Jun 2026-present)
+
+GITHUB: github.com/singamkarunn
+PROJECTS: agentic-patron-intelligence, production-rag-system, realtime-fraud-detection, smart-library-ml-platform
+
+STACK: Python, SQL, R, MATLAB | Scikit-learn, TensorFlow, PyTorch, LightFM, XGBoost | LangGraph, LangChain, GPT-4, ChromaDB, RAGAS | Airflow, Kafka, Docker, Kubernetes, MLflow, Prometheus, Grafana | AWS, GCP, Azure, Snowflake | Power BI, Tableau, Streamlit`;
+
+// ── CHATBOT ──────────────────────────────────────
+const messagesEl = document.getElementById('chat-messages');
+const inputEl = document.getElementById('chat-input-field');
+let history = [];
+
+// Animated placeholder
+const placeholders = [
+  'Ask about projects, skills, experience...',
+  'What ML stack does Karun use?',
+  'Tell me about the fraud detection system...',
+  'Is he open to senior roles?',
+  'What makes his RAG system different?'
+];
+let phIdx = 0;
+setInterval(() => {
+  phIdx = (phIdx + 1) % placeholders.length;
+  inputEl.placeholder = placeholders[phIdx];
+}, 3000);
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    addBot("I'm Karun's AI — I know his full background, projects, and tech stack. What do you want to know?");
+  }, 600);
+});
+
+function addBot(text) {
+  const d = document.createElement('div');
+  d.className = 'msg msg-bot';
+  d.textContent = text;
+  messagesEl.appendChild(d);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+function addUser(text) {
+  const d = document.createElement('div');
+  d.className = 'msg msg-user';
+  d.textContent = text;
+  messagesEl.appendChild(d);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+function addTyping() {
+  const d = document.createElement('div');
+  d.className = 'msg msg-typing';
+  d.id = 'typing';
+  d.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  messagesEl.appendChild(d);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+function removeTyping() { const e = document.getElementById('typing'); if(e) e.remove(); }
+
+async function sendMessage() {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  inputEl.value = '';
+  document.getElementById('chat-chips').style.display = 'none';
+  addUser(text);
+  history.push({ role:'user', content:text });
+  addTyping();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, system:KARUN_CONTEXT, messages:history })
+    });
+    const data = await res.json();
+    removeTyping();
+    const reply = data.content?.[0]?.text || "Reach me directly at singampalli.karun@gmail.com";
+    addBot(reply);
+    history.push({ role:'assistant', content:reply });
+  } catch(e) {
+    removeTyping();
+    addBot("Connection issue — reach me at singampalli.karun@gmail.com");
+  }
+}
+
+function sendChip(btn) { inputEl.value = btn.textContent; sendMessage(); }
+
+function skipToPortfolio() {
+  document.getElementById('chatbot-screen').classList.add('hidden');
+  const p = document.getElementById('portfolio');
+  p.classList.add('visible');
+  setTimeout(() => { document.getElementById('chatbot-screen').style.display = 'none'; }, 600);
+}
+
+// ── SLIDE FLIPPER ────────────────────────────────
+const slideIdx = { p1:0, p2:0, p3:0, p4:0 };
+const TOTAL = 10;
+
+['p1','p2','p3','p4'].forEach(id => {
+  const dotsEl = document.getElementById('dots-'+id);
+  for(let i=0;i<TOTAL;i++) {
+    const d = document.createElement('div');
+    d.className = 'sdot' + (i===0?' active':'');
+    d.onclick = () => goTo(id, i);
+    dotsEl.appendChild(d);
+  }
+});
+
+function updateSlider(id) {
+  const idx = slideIdx[id];
+  const track = document.getElementById('track-'+id);
+  track.style.transform = `translateX(-${idx * 100}%)`;
+  document.getElementById('counter-'+id).textContent = `${idx+1} / ${TOTAL}`;
+  document.getElementById('prev-'+id).disabled = idx === 0;
+  document.getElementById('next-'+id).disabled = idx === TOTAL-1;
+  const dots = document.querySelectorAll('#dots-'+id+' .sdot');
+  dots.forEach((d,i) => d.classList.toggle('active', i===idx));
+}
+
+function nextSlide(id) { if(slideIdx[id] < TOTAL-1) { slideIdx[id]++; updateSlider(id); } }
+function prevSlide(id) { if(slideIdx[id] > 0) { slideIdx[id]--; updateSlider(id); } }
+function goTo(id, i) { slideIdx[id] = i; updateSlider(id); }
+
+// ── AI INSIGHTS MODAL ───────────────────────────
+async function openInsights(name, context) {
+  document.getElementById('modal-title').textContent = 'AI Insights — ' + name;
+  document.getElementById('modal-body').innerHTML = '<div class="modal-loading"><div class="typing-dots"><span></span><span></span><span></span></div>&nbsp;Generating insights...</div>';
+  document.getElementById('insights-modal').classList.add('open');
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:800,
+        messages:[{ role:'user', content:`Provide sharp technical AI insights about this ML project in 4 sections:\n\n**Why This Matters** — real-world problem and business impact\n**Key Technical Decisions** — 2-3 architectural choices and why\n**What Makes It Production-Ready** — specific engineering decisions separating this from a prototype\n**What I'd Add Next** — 1-2 concrete next steps\n\nProject: ${name}\nDetails: ${context}\n\nKeep each section 2-3 sentences. Be specific and technical.` }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'Unable to generate insights.';
+    document.getElementById('modal-body').innerHTML = text
+      .replace(/\*\*(.*?)\*\*/g,'<strong style="color:#0f2044">$1</strong>')
+      .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+  } catch(e) {
+    document.getElementById('modal-body').textContent = 'Unable to load. Check connection.';
+  }
+}
+
+function closeInsights() { document.getElementById('insights-modal').classList.remove('open'); }
+document.getElementById('insights-modal').addEventListener('click', e => { if(e.target===document.getElementById('insights-modal')) closeInsights(); });
+
+function downloadPDF(id) { alert('Add your PDF to /assets/'+id+'.pdf and update this link.'); }
+</script>
+</body>
+</html>
