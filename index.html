@@ -422,7 +422,7 @@ footer{background:var(--navy);padding:22px 48px;display:flex;justify-content:spa
 <section class="section" id="projects">
   <div class="section-eyebrow">Completed Projects</div>
   <h2 class="section-title">Featured Work</h2>
-  <p class="section-sub">Use the arrows to flip through project slides — GitHub, AI insights, and PDF for each</p>
+  <p class="section-sub">Explore project slides and code, or try the library analytics demo and read its technical documents.</p>
 
   <!-- PROJECT 1 -->
   <div class="project-block">
@@ -539,40 +539,23 @@ footer{background:var(--navy);padding:22px 48px;display:flex;justify-content:spa
   </div>
 
   <!-- PROJECT 4 -->
-  <div class="project-block">
+  <div class="project-block" id="library-project">
     <div class="proj-meta">
       <div class="proj-meta-left">
         <div class="proj-badge badge-ml">ML Platform</div>
-        <div class="proj-name">Smart Library ML Platform</div>
-        <p class="proj-desc">Full ML lifecycle — Airflow ETL, Kafka ingestion, hybrid recommender (ALS + BERT + rules), FastAPI deployment, Prometheus monitoring.</p>
+        <div class="proj-name">LibraryPulse · Smart Library ML Platform</div>
+        <p class="proj-desc">Patron analytics and book discovery. Explore a synthetic-data dashboard, the Python recommendation architecture, and documented limitations.</p>
       </div>
       <div class="proj-actions">
         <a href="https://github.com/singamkarunn/smart-library-ml-platform" target="_blank" class="action-btn btn-gh">⌥ GitHub</a>
-        <button class="action-btn btn-ai" onclick="openInsights('Smart Library ML Platform','Full ML lifecycle platform built at Symplore. Hybrid recommender combining ALS, SVD, LightFM collaborative filtering with TF-IDF and BERT content-based models. Airflow DAGs for ETL, Kafka real-time ingestion, Docker deployment, Prometheus/Grafana monitoring with automated retraining at 5-6 week drift threshold.')">✦ AI Insights</button>
-        <button class="action-btn btn-pdf" onclick="downloadPDF('smart-library-ml-platform')">↓ PDF</button>
+        <a class="action-btn btn-ai" href="projects/librarypulse/index.html#dashboard">Explore demo</a>
+        <a class="action-btn btn-pdf" href="projects/librarypulse/documents.html">Read documents</a>
       </div>
     </div>
-    <div class="slide-viewer">
-      <div class="slide-track" id="track-p4">
-        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📚</div><div class="slide-placeholder-text">Slide 1 — Platform Overview</div><div class="slide-placeholder-hint">Replace with your PPT screenshot</div></div></div>
-        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📥</div><div class="slide-placeholder-text">Slide 2 — Data Ingestion</div></div></div>
-        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">⚙️</div><div class="slide-placeholder-text">Slide 3 — Airflow ETL</div></div></div>
-        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🧬</div><div class="slide-placeholder-text">Slide 4 — Feature Engineering</div></div></div>
-        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🤝</div><div class="slide-placeholder-text">Slide 5 — Collaborative Filtering</div></div></div>
-        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📝</div><div class="slide-placeholder-text">Slide 6 — Content-Based NLP</div></div></div>
-        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">⚡</div><div class="slide-placeholder-text">Slide 7 — Hybrid Engine</div></div></div>
-        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📉</div><div class="slide-placeholder-text">Slide 8 — Drift Monitoring</div></div></div>
-        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">📊</div><div class="slide-placeholder-text">Slide 9 — Dashboard</div></div></div>
-        <div class="slide-page"><div class="slide-placeholder"><div class="slide-placeholder-icon">🚀</div><div class="slide-placeholder-text">Slide 10 — Live Demo · github.com/singamkarunn</div></div></div>
-      </div>
-      <div class="slide-controls">
-        <button class="slide-arrow" id="prev-p4" onclick="prevSlide('p4')" disabled>←</button>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
-          <span class="slide-counter" id="counter-p4">1 / 10</span>
-          <div class="slide-dots-row" id="dots-p4"></div>
-        </div>
-        <button class="slide-arrow" id="next-p4" onclick="nextSlide('p4')">→</button>
-      </div>
+    <div style="padding:28px;background:var(--blue-light);border:1px solid var(--border);border-radius:8px">
+      <h3 style="color:var(--navy);font-size:20px;margin-bottom:12px">From borrowing records to collection decisions</h3>
+      <p style="font-size:16px;max-width:720px;margin-bottom:20px">Filter circulation by month and genre, inspect borrowing trends, and explore popular titles. No sign-in or real patron data. The browser demo is an analytics companion, not a live connection to the Python ML service.</p>
+      <a href="projects/librarypulse/index.html" class="btn-primary" style="display:inline-block">View case study & dashboard</a>
     </div>
   </div>
 </section>
@@ -772,7 +755,7 @@ function skipToPortfolio() {
 const slideIdx = { p1:0, p2:0, p3:0, p4:0 };
 const TOTAL = 10;
 
-['p1','p2','p3','p4'].forEach(id => {
+['p1','p2','p3'].forEach(id => {
   const dotsEl = document.getElementById('dots-'+id);
   for(let i=0;i<TOTAL;i++) {
     const d = document.createElement('div');
@@ -825,6 +808,11 @@ function closeInsights() { document.getElementById('insights-modal').classList.r
 document.getElementById('insights-modal').addEventListener('click', e => { if(e.target===document.getElementById('insights-modal')) closeInsights(); });
 
 function downloadPDF(id) { alert('Add your PDF to /assets/'+id+'.pdf and update this link.'); }
+// Return directly to the showcase without reopening the chatbot landing.
+if (window.location.hash === '#library-project') {
+  skipToPortfolio();
+  document.getElementById('library-project').scrollIntoView();
+}
 </script>
 </body>
 </html>
